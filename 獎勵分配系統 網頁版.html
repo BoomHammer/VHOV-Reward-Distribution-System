@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[VHOV]全村的希望 - 賽季貢獻獎勵分配系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #366092 0%, #284a6e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+        }
+
+        .progress-step.completed .step-circle {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .progress-step.active .step-circle {
+            background: #667eea;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            text-align: center;
+            max-width: 80px;
+        }
+
+        .content {
+            padding: 40px;
+            min-height: 500px;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="number"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .ratio-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .ratio-item label {
+            margin-bottom: 8px;
+        }
+
+        .ratio-item input {
+            width: 100%;
+        }
+
+        .result-box {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .result-item .label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-item .value {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-next {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-next:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-prev {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-prev:hover {
+            background: #e0e0e0;
+        }
+
+        .textarea-help {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th {
+            background: #366092;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-valid {
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        .status-invalid {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .summary-card {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .final-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .result-section {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .result-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .result-item-detail .rank {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .result-item-detail .name {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .result-item-detail .box {
+            font-weight: bold;
+            color: #f44336;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .ratio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .final-results {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-bar {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .step-label {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 [VHOV]全村的希望</h1>
+            <p>賽季貢獻獎勵分配系統</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-step active" onclick="goToStep(0)">
+                <div class="step-circle">1</div>
+                <div class="step-label">基本設定</div>
+            </div>
+            <div class="progress-step" onclick="goToStep(1)">
+                <div class="step-circle">2</div>
+                <div class="step-label">特殊獎勵</div>
+            </div>
+            <div class="progress-step" onclick="goToStep(2)">
+                <div class="step-circle">3</div>
+                <div class="step-label">人員輸入</div>
+            </div>
+            <div class="progress-step" onclick="goToStep(3)">
+                <div class="step-circle">4</div>
+                <div class="step-label">最終結果</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 步驟 1: 基本設定 -->
+            <div class="step-content active" id="step-0">
+                <div class="step-title">📦 步驟 1: 基本設定</div>
+                
+                <div class="form-group">
+                    <label for="total-boxes">寶箱總個數</label>
+                    <input type="number" id="total-boxes" placeholder="例如: 300" min="1" value="300">
+                </div>
+
+                <div class="form-group">
+                    <label>四個清單的寶箱分配比例</label>
+                    <div class="ratio-grid">
+                        <div class="ratio-item">
+                            <label>清理 (%)</label>
+                            <input type="number" id="ratio-clean" placeholder="25" min="0" max="100" value="25">
+                        </div>
+                        <div class="ratio-item">
+                            <label>攻佔 (%)</label>
+                            <input type="number" id="ratio-occupy" placeholder="25" min="0" max="100" value="25">
+                        </div>
+                        <div class="ratio-item">
+                            <label>殺敵 (%)</label>
+                            <input type="number" id="ratio-kill" placeholder="25" min="0" max="100" value="25">
+                        </div>
+                        <div class="ratio-item">
+                            <label>感染 (%)</label>
+                            <input type="number" id="ratio-infect" placeholder="25" min="0" max="100" value="25">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ratio-warning" style="display: none;" class="warning">
+                    ⚠️ 比例合計必須為 100%
+                </div>
+
+                <div class="result-box" id="result-box-1" style="display: none;">
+                    <div class="result-item">
+                        <div class="label">清理清單</div>
+                        <div class="value" id="box-clean">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">攻佔清單</div>
+                        <div class="value" id="box-occupy">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">殺敵清單</div>
+                        <div class="value" id="box-kill">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">感染清單</div>
+                        <div class="value" id="box-infect">0</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-next" id="btn-confirm-0" onclick="confirmStep0()" style="background: #4caf50;">✓ 確認</button>
+                    <button class="btn-next" id="btn-next-0" onclick="validateAndGoStep(0)" style="display: none;">下一步 →</button>
+                </div>
+            </div>
+
+            <!-- 步驟 1.5: 特殊獎勵 -->
+            <div class="step-content" id="step-1">
+                <div class="step-title">👑 步驟 2: 特殊獎勵</div>
+                
+                <div class="form-group">
+                    <label for="special-members">人員清單（獨立獎勵 + R4管理層）</label>
+                    <p class="textarea-help">
+                        每行一個人，格式: 人名 數字 (例如: 小Q和小R 400)<br>
+                        支援複製貼上，自動識別為獨立獎勵（前2人）或R4（後續人員）
+                    </p>
+                    <textarea id="special-members" placeholder="小Q和小R 400&#10;台灣麵包超人 400" rows="8"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="extra-members">額外獎勵（不排除統計，仍參與四大清單）</label>
+                    <p class="textarea-help">
+                        每行一個人，格式: 人名 數字 (例如: 雷閃閃 15)<br>
+                        這裡的人員「不會」被排除，他們將獲得：清單分配數量 + 這裡設定的額外數量。
+                    </p>
+                    <textarea id="extra-members" placeholder="雷閃閃 15&#10;派大600碎 20" rows="4"></textarea>
+                </div>
+
+                <div class="summary-card" id="special-summary" style="display: none;">
+                    <div class="summary-title">✓ 特殊獎勵摘要</div>
+                    <div class="summary-content" id="special-summary-content"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-prev" onclick="goToStep(0)">← 上一步</button>
+                    <button class="btn-next" id="btn-next-1" onclick="validateAndGoStep(1)">下一步 →</button>
+                </div>
+            </div>
+
+            <!-- 步驟 2: 人員輸入 -->
+            <div class="step-content" id="step-2">
+                <div class="step-title">👥 步驟 3: 人員輸入</div>
+                
+                <div class="summary-card">
+                    <div class="summary-title">📋 輸入指南</div>
+                    <div style="font-size: 13px; line-height: 1.6;">
+                        <div style="margin-bottom: 8px;">✓ 每個清單單獨輸入，每行一個人名</div>
+                        <div style="margin-bottom: 8px;">✓ 支援從 Excel 直接複製貼上</div>
+                        <div>✓ 按排名順序輸入（第1名到最後一名）</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🧹 清理清單</label>
+                    <textarea id="list-clean" placeholder="派大600碎&#10;100歲貓貓&#10;妳奈我合" rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>⚔️ 攻佔清單</label>
+                    <textarea id="list-occupy" placeholder="十点阅己&#10;家有肥喵喵喵&#10;Me2Uu2mE" rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🗡️ 殺敵清單</label>
+                    <textarea id="list-kill" placeholder="Hữu Lang&#10;SodearInThailand&#10;昇皇" rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🦠 感染清單</label>
+                    <textarea id="list-infect" placeholder="全服的希望&#10;Commander Zhuang&#10;GEMGUL" rows="5"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-prev" onclick="goToStep(1)">← 上一步</button>
+                    <button class="btn-next" id="btn-next-2" onclick="validateAndGoStep(2)">下一步 →</button>
+                </div>
+            </div>
+
+
+            <div class="step-content" id="step-3">
+                <div class="step-title">🏆 步驟 4: 最終獎勵分配結果</div>
+                
+                <div id="validation-results"></div>
+                
+                <div id="final-results"></div>
+
+                <div class="button-group">
+                    <button class="btn-prev" onclick="goToStep(2)">← 上一步</button>
+                    <button class="btn-next" onclick="exportResults()">📥 匯出結果</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 公會成員清單
+        const guildMembers = [
+            '人生濕濕', '小Q和小R', '蒼閻', 'Kan2288', '揮之不去的愛', 'PöstXMaløne', '骨頭白衣', 
+            '骨頭絲絲', '藍色幽谷', '雷閃閃', '派大600碎', '100歲貓貓', '妳奈我合', '百碎左手', 
+            '誰能無過', '松 桂 桃', 'milet世一', '小小課金仔', 'Oil Catgang', '夏蝦哈', '西格玛莮人', 
+            '能雕', '湜', '來不及吃飯', '十点阅己', '家有肥喵喵喵', 'Me2Uu2mE', '豆猫', 
+            '台灣麵包超人', 'Small CHIUYBIN', '嘎嘎烏喇辣', 'mmackopo', '馬克就靠杯', '柴可夫嫩雞', 
+            'HoáPhạm9x', '精壯likeaKingKong', '唔知想叫咩名', '愛吃的小一', 'Hữu Lang', 
+            'SodearInThailand', '昇皇', '777TALHA', '全柬一顆5500', '棒棒糖真棒', '苟苟狗狗', 
+            '骨頭小雞', '阿尼帽帽Joan', 'LongMao', 'VictorCheong', 'salmanmk', '獨月', '企鵝撞冰箱', 
+            '角落小夥伴', '霜將九星尾宿', 'BOM Benda', '阿莯莯', 'BaBi Găng', '跑跑咚Tung', 
+            'KY is good', 'A Fresh Start', '小天俠', '賴皮得', '骨頭天天', 'nickchan666', 'Bé cũn', 
+            'Joker2k', 'Blue ZZZ', '胖虎打大熊', 'Tungtungtung930', '辣味野人', 'SCARMADDG', 
+            '牛肉拼盤', 'Chill 希朗', '全服的希望', 'Commander Zhuang', 'GEMGUL', '穗稻鍾舞', 
+            'UstadJ33', 'Frysie', 'PookiexBaby', 'Bmw525', 'Major Abhay', 'Hanna w', '紀小天', 
+            'Symbol of Peace', 'GaPiLang', 'iamalumi', '骨頭唧唧', 'Toilanguoivietnam', '連盛機械工程', 
+            '摸摸鱼鱼'
+        ];
+
+        let appData = {
+            totalBoxes: 0,
+            ratios: { clean: 0, occupy: 0, kill: 0, infect: 0 },
+            boxAllocations: { clean: 0, occupy: 0, kill: 0, infect: 0 },
+            specialMembers: { independent: [], r4: [], extra: [] }, // 新增 extra
+            lists: { clean: [], occupy: [], kill: [], infect: [] },
+            validMembers: { clean: [], occupy: [], kill: [], infect: [] },
+            rewards: { clean: {}, occupy: {}, kill: {}, infect: {} }
+        };
+
+        let currentStep = 0;
+
+        function confirmStep0() {
+            const totalBoxes = parseInt(document.getElementById('total-boxes').value) || 0;
+            const ratios = {
+                clean: parseInt(document.getElementById('ratio-clean').value) || 0,
+                occupy: parseInt(document.getElementById('ratio-occupy').value) || 0,
+                kill: parseInt(document.getElementById('ratio-kill').value) || 0,
+                infect: parseInt(document.getElementById('ratio-infect').value) || 0
+            };
+
+            const totalRatio = ratios.clean + ratios.occupy + ratios.kill + ratios.infect;
+
+            if (totalBoxes <= 0) {
+                alert('請輸入有效的寶箱總數');
+                return;
+            }
+
+            if (totalRatio !== 100) {
+                document.getElementById('ratio-warning').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('ratio-warning').style.display = 'none';
+
+            // 計算寶箱分配
+            const boxAlloc = {
+                clean: Math.floor(totalBoxes * ratios.clean / 100),
+                occupy: Math.floor(totalBoxes * ratios.occupy / 100),
+                kill: Math.floor(totalBoxes * ratios.kill / 100),
+                infect: Math.floor(totalBoxes * ratios.infect / 100)
+            };
+
+            // 餘數納入殺敵
+            const allocated = Object.values(boxAlloc).reduce((a, b) => a + b, 0);
+            boxAlloc.kill += totalBoxes - allocated;
+
+            appData.totalBoxes = totalBoxes;
+            appData.ratios = ratios;
+            appData.boxAllocations = boxAlloc;
+
+            document.getElementById('box-clean').textContent = boxAlloc.clean;
+            document.getElementById('box-occupy').textContent = boxAlloc.occupy;
+            document.getElementById('box-kill').textContent = boxAlloc.kill;
+            document.getElementById('box-infect').textContent = boxAlloc.infect;
+            document.getElementById('result-box-1').style.display = 'block';
+
+            // 隱藏確認按鈕，顯示下一步按鈕
+            document.getElementById('btn-confirm-0').style.display = 'none';
+            document.getElementById('btn-next-0').style.display = 'block';
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach(el => el.classList.remove('active', 'completed'));
+
+            document.getElementById(`step-${step}`).classList.add('active');
+
+            for (let i = 0; i < step; i++) {
+                document.querySelectorAll('.progress-step')[i].classList.add('completed');
+            }
+            document.querySelectorAll('.progress-step')[step].classList.add('active');
+
+            currentStep = step;
+        }
+
+        function validateAndGoStep(step) {
+            if (step === 1) {
+                const specialInput = document.getElementById('special-members').value;
+                const lines = specialInput.trim().split('\n').filter(l => l.trim());
+                const independent = [];
+                const r4 = [];
+
+                lines.forEach((line, idx) => {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                        const name = parts.slice(0, -1).join(' ');
+                        const amount = parseInt(parts[parts.length - 1]) || 0;
+                        if (idx < 2) {
+                            independent.push({ name, amount });
+                        } else {
+                            r4.push({ name, amount });
+                        }
+                    }
+                });
+
+                // --- 處理新增的「額外固定獎勵」 ---
+                const extraInput = document.getElementById('extra-members').value;
+                const extraLines = extraInput.trim().split('\n').filter(l => l.trim());
+                const extra = [];
+
+                extraLines.forEach(line => {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                        const name = parts.slice(0, -1).join(' ');
+                        const amount = parseInt(parts[parts.length - 1]) || 0;
+                        extra.push({ name, amount });
+                    }
+                });
+
+                appData.specialMembers = { independent, r4, extra };
+
+                // 顯示摘要
+                let summary = '';
+                independent.forEach(m => summary += `<div class="summary-item"><span>${m.name}</span><span>✓ 獨立獎勵 × ${m.amount}</span></div>`);
+                r4.forEach(m => summary += `<div class="summary-item"><span>${m.name}</span><span>✓ R4 × ${m.amount}</span></div>`);
+                // 新增額外獎勵的顯示
+                extra.forEach(m => summary += `<div class="summary-item" style="color:#d32f2f; font-weight:600;"><span>${m.name}</span><span>✓ 額外固定 + ${m.amount}</span></div>`);
+
+                if (summary) {
+                    document.getElementById('special-summary-content').innerHTML = summary;
+                    document.getElementById('special-summary').style.display = 'block';
+                }
+            }
+
+            if (step === 2) {
+                appData.lists = {
+                    clean: parseList(document.getElementById('list-clean').value),
+                    occupy: parseList(document.getElementById('list-occupy').value),
+                    kill: parseList(document.getElementById('list-kill').value),
+                    infect: parseList(document.getElementById('list-infect').value)
+                };
+
+                // 直接進行驗證
+                validateMembers();
+                calculateRewards();
+                displayFinalResults();
+            }
+
+            goToStep(step + 1);
+        }
+
+        function parseList(text) {
+            return text.trim().split('\n').filter(l => l.trim()).map(l => l.trim());
+        }
+
+        function validateMembers() {
+            const excludedSet = new Set();
+            appData.specialMembers.independent.forEach(m => excludedSet.add(m.name));
+            appData.specialMembers.r4.forEach(m => excludedSet.add(m.name));
+
+            let html = '';
+
+            Object.entries(appData.lists).forEach(([category, list]) => {
+                const icons = { clean: '🧹', occupy: '⚔️', kill: '🗡️', infect: '🦠' };
+                const categoryNames = { clean: '清理', occupy: '攻佔', kill: '殺敵', infect: '感染' };
+
+                let validMembers = [];
+                let html2 = `<div class="result-section"><h3>${icons[category]} ${categoryNames[category]}清單 (${list.length}人)</h3><table class="data-table">`;
+                html2 += '<thead><tr><th>排名</th><th>人名</th><th>狀態</th></tr></thead><tbody>';
+
+                list.forEach((name, idx) => {
+                    const isValid = guildMembers.includes(name) && !excludedSet.has(name);
+                    const status = isValid ? '✓' : '✗';
+                    const statusClass = isValid ? 'status-valid' : 'status-invalid';
+
+                    html2 += `<tr><td>${idx + 1}</td><td>${name}</td><td class="${statusClass}">${status}</td></tr>`;
+
+                    if (isValid) {
+                        validMembers.push({ rank: idx + 1, name });
+                    }
+                });
+
+                html2 += '</tbody></table></div>';
+                html += html2;
+
+                appData.validMembers[category] = validMembers;
+            });
+
+            document.getElementById('validation-results').innerHTML = html;
+        }
+
+        let globalRemainder = 0; // 全局餘數變數，用來統計所有除不盡的寶箱
+
+        function calculateRewards() {
+            const excludedSet = new Set();
+            appData.specialMembers.independent.forEach(m => excludedSet.add(m.name));
+            appData.specialMembers.r4.forEach(m => excludedSet.add(m.name));
+
+            // 1. 統計所有特殊獎勵（獨立、R4）與固定額外獎勵的總額
+            let specialTotal = 0;
+            appData.specialMembers.independent.forEach(m => specialTotal += m.amount);
+            appData.specialMembers.r4.forEach(m => specialTotal += m.amount);
+            if (appData.specialMembers.extra) {
+                appData.specialMembers.extra.forEach(m => specialTotal += m.amount);
+            }
+
+            // 2. 用總寶箱數減去固定獎勵總額，得到真正用於排名分配的剩餘預算
+            let pool = appData.totalBoxes - specialTotal;
+            if (pool < 0) {
+                alert(`⚠️ 警告：特殊與額外固定獎勵總數 (${specialTotal}) 已超過設定的總寶箱數 (${appData.totalBoxes})！可用分配數歸零。`);
+                pool = 0;
+            }
+
+            // 3. 依據設定比例分配四大清單預算
+            appData.boxAllocations = {
+                clean: Math.floor(pool * appData.ratios.clean / 100),
+                occupy: Math.floor(pool * appData.ratios.occupy / 100),
+                kill: Math.floor(pool * appData.ratios.kill / 100),
+                infect: Math.floor(pool * appData.ratios.infect / 100)
+            };
+
+            // 計算第一階段比例除不盡的餘數
+            let allocatedToLists = appData.boxAllocations.clean + appData.boxAllocations.occupy + appData.boxAllocations.kill + appData.boxAllocations.infect;
+            globalRemainder = pool - allocatedToLists;
+
+            // 初始化 rewards 物件結構
+            appData.rewards = { clean: {}, occupy: {}, kill: {}, infect: {} };
+
+            // 4. 計算各清單內部的排名獎勵
+            Object.entries(appData.validMembers).forEach(([category, members]) => {
+                const totalBoxes = appData.boxAllocations[category];
+                const listRewards = {};
+
+                const top5 = members.filter(m => m.rank <= 5);
+                const top6_25 = members.filter(m => m.rank > 5 && m.rank <= 25);
+                const top26_60 = members.filter(m => m.rank > 25 && m.rank <= 60);
+                const beyond60 = members.filter(m => m.rank > 60);
+
+                let remainingBoxes = totalBoxes;
+                beyond60.forEach(m => {
+                    if (remainingBoxes > 0) {
+                        listRewards[m.name] = 1;
+                        remainingBoxes--;
+                    } else {
+                        listRewards[m.name] = 0;
+                    }
+                });
+
+                if (remainingBoxes > 0) {
+                    const boxesTop5 = Math.floor(remainingBoxes * 0.25);
+                    const boxesTop6_25 = Math.floor(remainingBoxes * 0.40);
+                    const boxesTop26_60 = remainingBoxes - boxesTop5 - boxesTop6_25;
+
+                    const distributeToGroup = (group, boxes) => {
+                        if (group.length === 0) {
+                            if (boxes > 0) globalRemainder += boxes;
+                            return;
+                        }
+                        const perPerson = Math.floor(boxes / group.length);
+                        const rem = boxes % group.length;
+                        
+                        group.forEach(m => {
+                            listRewards[m.name] = (listRewards[m.name] || 0) + perPerson;
+                        });
+                        globalRemainder += rem;
+                    };
+
+                    distributeToGroup(top5, boxesTop5);
+                    distributeToGroup(top6_25, boxesTop6_25);
+                    distributeToGroup(top26_60, boxesTop26_60);
+                }
+
+                // 寫入基礎排名獎勵
+                Object.entries(listRewards).forEach(([name, amount]) => {
+                    appData.rewards[category][name] = amount;
+                });
+            });
+
+            // 5. 將步驟 2 的所有固定與特殊獎勵平均拆分到 4 個項目中
+            const categories = ['clean', 'occupy', 'kill', 'infect'];
+            
+            const distributeFixedToCategories = (membersList) => {
+                if (!membersList) return;
+                membersList.forEach(m => {
+                    const base = Math.floor(m.amount / 4);
+                    const rem = m.amount % 4;
+                    
+                    categories.forEach((cat, idx) => {
+                        if (!appData.rewards[cat][m.name]) {
+                            appData.rewards[cat][m.name] = 0;
+                        }
+                        if (idx === 3) {
+                            appData.rewards[cat][m.name] += (base + rem);
+                        } else {
+                            appData.rewards[cat][m.name] += base;
+                        }
+                    });
+                });
+            };
+
+            distributeFixedToCategories(appData.specialMembers.independent);
+            distributeFixedToCategories(appData.specialMembers.r4);
+            distributeFixedToCategories(appData.specialMembers.extra);
+
+            // 6. 【新增修正】二階段平均分配：收集目前獲得寶箱的總人數
+            const allParticipants = new Set();
+            Object.values(appData.rewards).forEach(categoryRewards => {
+                Object.keys(categoryRewards).forEach(name => {
+                    // ★ 修改核心：只有「有效公會成員」且「不在排除名單（獨立與 R4）」的人，才參與結餘平分
+                    if (guildMembers.includes(name) && !excludedSet.has(name)) {
+                        allParticipants.add(name);
+                    }
+                });
+            });
+
+            let totalPeople = allParticipants.size;
+            
+            // 初始化二次分配記錄，供網頁顯示使用
+            appData.secondaryDistribution = {
+                originalRemainder: globalRemainder,
+                perPerson: 0,
+                finalRemainder: globalRemainder
+            };
+
+            if (totalPeople > 0) {
+                let perPersonExtra = Math.floor(globalRemainder / totalPeople);
+                let finalRemainder = globalRemainder % totalPeople;
+
+                appData.secondaryDistribution.perPerson = perPersonExtra;
+                appData.secondaryDistribution.finalRemainder = finalRemainder;
+
+                // 如果每人至少可以多分 1 個以上，則疊加到每個人的最後一個項目（感染清單）中
+                if (perPersonExtra > 0) {
+                    allParticipants.forEach(name => {
+                        if (!appData.rewards.infect[name]) {
+                            appData.rewards.infect[name] = 0;
+                        }
+                        appData.rewards.infect[name] += perPersonExtra;
+                    });
+                }
+                
+                // 最終結餘更新
+                globalRemainder = finalRemainder;
+            }
+        }
+
+        function distributeBoxes(members, totalBoxes, rewards) {
+            if (members.length === 0 || totalBoxes <= 0) return;
+
+            const perPerson = Math.floor(totalBoxes / members.length);
+            const remainder = totalBoxes % members.length;
+
+            members.forEach((m, idx) => {
+                rewards[m.name] = perPerson;
+                if (idx === 0) {
+                    rewards[m.name] += remainder;
+                }
+            });
+        }
+
+        function displayFinalResults() {
+            const icons = { clean: '🧹', occupy: '⚔️', kill: '🗡️', infect: '🦠' };
+            const categoryNames = { clean: '清理', occupy: '攻佔', kill: '殺敵', infect: '感染' };
+            const excludedSet = new Set();
+            appData.specialMembers.independent.forEach(m => excludedSet.add(m.name));
+            appData.specialMembers.r4.forEach(m => excludedSet.add(m.name));
+
+            // 更新：依要求修改餘數提示字樣
+            let remainderHtml = '';
+            if (typeof globalRemainder !== 'undefined' && appData.secondaryDistribution) {
+                const sd = appData.secondaryDistribution;
+                remainderHtml = `
+                    <div class="summary-card" style="background: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                        <div class="summary-title" style="color: #856404;">💡 寶箱分配餘額提示</div>
+                        <div style="font-size: 13px; color: #856404; line-height: 1.5; font-weight: 600;">
+                            剩餘未分配寶箱：${sd.originalRemainder} 個，平均每人分配 ${sd.perPerson} 個，最終結餘 ${sd.finalRemainder} 個
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                            （注：平均分配的寶箱已自動加入每位成員的「🦠 感染清單」中，最終結餘的零星寶箱可由管理層手動發放）
+                        </div>
+                    </div>
+                `;
+            }
+
+            let html = remainderHtml + '<div class="final-results">';
+
+            Object.entries(appData.lists).forEach(([category, memberList]) => {
+                const rewards = appData.rewards[category] || {};
+                const categoryLabel = categoryNames[category];
+
+                let memberHtml = '<div class="result-list">';
+                memberList.forEach((name, idx) => {
+                    const rank = idx + 1;
+                    const isValidMember = guildMembers.includes(name);
+                    const isExcluded = excludedSet.has(name);
+                    
+                    const getGroup = (rank) => {
+                        if (rank <= 5) return '前5名';
+                        if (rank <= 25) return '6-25名';
+                        if (rank <= 60) return '26-60名';
+                        return '61名以後';
+                    };
+
+                    let statusIcon = '✓';
+                    let statusColor = '#4caf50';
+                    let statusText = '有效';
+                    
+                    if (isExcluded) {
+                        statusIcon = '✗';
+                        statusColor = '#ff9800';
+                        statusText = '排除';
+                    } else if (!isValidMember) {
+                        statusText = '無效';
+                        statusIcon = '✗';
+                        statusColor = '#f44336';
+                    }
+
+                    if (isValidMember && appData.specialMembers.extra) {
+                        const extraObj = appData.specialMembers.extra.find(e => e.name === name);
+                        if (extraObj) {
+                            statusText += ' (含固定額外)';
+                        }
+                    }
+
+                    const boxCount = isValidMember ? (rewards[name] || 0) : 0;
+
+                    memberHtml += `
+                        <div class="result-item-detail" style="opacity: ${isValidMember ? 1 : 0.6};">
+                            <span class="rank">#${rank}</span>
+                            <span class="name">${name}</span>
+                            <span style="color: ${statusColor}; font-size: 12px; font-weight: 600;">${statusIcon} ${statusText}</span>
+                            <span style="color: #999; font-size: 12px;">${isValidMember ? getGroup(rank) : '-'}</span>
+                            <span class="box" style="color: ${boxCount > 0 ? '#f44336' : '#ccc'};">${boxCount}</span>
+                        </div>
+                    `;
+                });
+                memberHtml += '</div>';
+
+                const validCount = memberList.filter(m => guildMembers.includes(m)).length;
+                const totalBoxes = appData.boxAllocations[category] || 0;
+
+                let actualListTotal = 0;
+                Object.entries(rewards).forEach(([name, amt]) => {
+                    if (guildMembers.includes(name)) {
+                        actualListTotal += amt;
+                    }
+                });
+
+                html += `
+                    <div class="result-section">
+                        <h3>${icons[category]} ${categoryLabel}清單</h3>
+                        <div style="margin-bottom: 10px; font-size: 13px; color: #666;">
+                            📊 總計: ${memberList.length}人 (有效: ${validCount}人) | 🎁 分配預算: ${totalBoxes}個 (項目總發出: ${actualListTotal}個)
+                        </div>
+                        ${memberHtml}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('final-results').innerHTML = html;
+        }
+
+        function exportResults() {
+            // 收集所有在系統中獲得寶箱的玩家不重複名單
+            const allParticipants = new Set();
+            
+            Object.values(appData.rewards).forEach(categoryRewards => {
+                Object.keys(categoryRewards).forEach(name => {
+                    if (guildMembers.includes(name)) {
+                        allParticipants.add(name);
+                    }
+                });
+            });
+
+            // 建立 CSV 標頭，加入 BOM (\uFEFF)
+            let csvContent = '\uFEFF'; 
+            csvContent += '人名,清理清單寶箱數,攻佔清單寶箱數,殺敵清單寶箱數,感染清單寶箱數,總獲得寶箱數\n';
+
+            // 逐一建立每位成員的加總整併列
+            allParticipants.forEach(name => {
+                const clean = appData.rewards.clean[name] || 0;
+                const occupy = appData.rewards.occupy[name] || 0;
+                const kill = appData.rewards.kill[name] || 0;
+                const infect = appData.rewards.infect[name] || 0;
+                const total = clean + occupy + kill + infect;
+
+                // 只有總數大於 0 的人才會被匯出
+                if (total > 0) {
+                    csvContent += `${name},${clean},${occupy},${kill},${infect},${total}\n`;
+                }
+            });
+
+            // 建立下載連結並觸發
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', '賽季貢獻獎勵分配總表.csv');
+            
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 初始化
+        document.getElementById('total-boxes').addEventListener('change', () => {
+            document.getElementById('ratio-warning').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
